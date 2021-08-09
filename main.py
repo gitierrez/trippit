@@ -6,9 +6,9 @@ from src.networks import build_style_network, MultiOutputVGG
 from src.losses import content_loss, style_loss, variation_loss
 
 train_dataset = build_dataset(
-    images_path="resources/images/*.jpg",
+    images_path="resources/images/1.jpg",
     style_path="resources/styles/starry-night.jpg",
-    batch_size=2
+    batch_size=1
 )
 
 style_network = build_style_network(input_shape=(360, 640, 3))
@@ -41,8 +41,8 @@ train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
 # Might fail: loss is reduced by batch-sum, causing large gradients
 cum_step = 0
-for epoch in range(1):
-    print("\nStart of epoch %d" % (epoch,))
+for epoch in range(100):
+    print("\nStart of epoch %d" % (epoch + 1,))
     for step, (img, style) in enumerate(train_dataset):
         cum_step += 1
         with tf.GradientTape() as tape:
@@ -57,6 +57,7 @@ for epoch in range(1):
         grads = tape.gradient(loss, nst_model.trainable_weights)
         optimizer.apply_gradients(zip(grads, nst_model.trainable_weights))
 
+        # TODO: add image to log, add gradients to log
         with train_summary_writer.as_default():
             tf.summary.scalar('loss', loss, step=cum_step)
             tf.summary.scalar('content_loss', loss_c, step=cum_step)
